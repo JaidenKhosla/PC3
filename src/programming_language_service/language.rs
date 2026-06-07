@@ -4,42 +4,30 @@ use std::{collections::hash_map::HashMap};
 /*(
 Execution Code:
 
-{FILE_NAME_OF_FILE}
+{FILE_NAME}
 {FILE_NAME_WITH_EXTENSION}
 {PATH}
 {PARENT PATH}
 
 ) */
-pub struct Language 
+pub struct Language<'a>
 {
-    pub title: String,
-    pub header_command: String,
-    pub execution_code: String,
-    pub installation_code: String,
+    pub title: &'a str,
+    pub header_command: &'a str,
+    pub execution_code: &'a str,
+    // pub installation_code: String,
     // timeout_period: u32 //in seconds/
 }
 
-impl Language
+impl<'a> Language<'a>
 {
-    pub fn new(title: impl Into<String>, header_command: impl Into<String>, execution_code: impl Into<String>, installation_code: impl Into<String>) -> Language
+    pub fn new(title: &'a str, header_command: &'a str, execution_code: &'a str) -> Language<'a>
     {
-        return Language 
-        {
-            title: title.into(),
-            header_command: header_command.into(),
-            execution_code: execution_code.into(),
-            installation_code: installation_code.into(),
-        };
-    }
-
-    pub fn get_title(&self) -> &str
-    {
-        return &self.title;
-    }
-
-    pub fn get_header_command(&self) -> &str
-    {
-        return &self.header_command;
+        Language {
+            title,
+            header_command,
+            execution_code,
+        }
     }
 
     pub fn exists_within_device(&self) -> bool 
@@ -55,7 +43,7 @@ impl Language
             r#"Programming Language doesn't exist on device. 
             PROGRAMMING NAME: {}
             HEADER_COMMAND: {}"#, 
-            self.get_title(), self.get_header_command()).to_string());
+            self.title, self.header_command).to_string());
         }
 
         let parent_child_seperator = file_path.rfind("/").unwrap_or(file_path.len());
@@ -103,10 +91,5 @@ impl Language
 
         return Ok(output.to_string());
     }
-}
-
-pub struct Language_pool<'a>
-{   
-    pub pool: HashMap<&'a str, Language>
 }
 

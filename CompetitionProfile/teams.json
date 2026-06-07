@@ -1,0 +1,31 @@
+[
+    {
+        "name": "TEAM 0",
+        "password": "password",
+        "score": 0,
+        "user_count": 0,
+        "problem_history": [
+            {
+                "name": "Problem 0",
+                "attempts": 2,
+                "statuses": ["MEMORY_EXCEEDED", "OK"],
+                "times": [2, 150]
+            }
+        ]
+    },
+    
+    {
+        "name": "TEAM 1",
+        "password": "password",
+        "score": 20,
+        "user_count": 0,
+        "problem_history": [
+            {
+                "name": "Problem 0",
+                "attempts": 2,
+                "statuses": ["MEMORY_EXCEEDED", "OK"],
+                "times": [2, 150]
+            }
+        ]
+    }
+]
