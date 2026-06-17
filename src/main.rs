@@ -1,22 +1,26 @@
-mod programming_language_service;
-mod team_service;
-mod problem_service;
+mod language_list;
+mod language;
 
-use team_service::teams::Team;
+mod problem;
+mod profile;
+mod judge;
 
-use std::{io::Read, process::Command};
-use std::io::{BufRead, BufReader};
-use std::fs::File;
+mod status;
+mod teams;
+
+
+mod util;
+mod database;
+// use programming_language_service::{language};
+use crate::{profile::Profile, teams::Team};
 use std::path::Path;
-
-use programming_language_service::{language};
-
+use crate::database::database::Database;
 fn main() {
     // let x: u8 = Team::generate("team_name".to_string(),8u8);
 
     // println!("{}", x);
-    let path = Path::new("./CompetitionProfile/teams.json");
+    let path = Path::new("./CompetitionProfile");
 
-    println!("{:?}",Team::from(path).unwrap());
+    Profile::from(path).unwrap();
     // Team::from(Path::new(""))
 }

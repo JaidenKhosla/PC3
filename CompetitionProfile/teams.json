@@ -8,7 +8,7 @@
             {
                 "name": "Problem 0",
                 "attempts": 2,
-                "statuses": ["MEMORY_EXCEEDED", "OK"],
+                "statuses": ["TIME_LIMIT_EXCEEDED", "OK"],
                 "times": [2, 150]
             }
         ]
@@ -23,7 +23,7 @@
             {
                 "name": "Problem 0",
                 "attempts": 2,
-                "statuses": ["MEMORY_EXCEEDED", "OK"],
+                "statuses": ["MEMORY_OVERFLOW", "OK"],
                 "times": [2, 150]
             }
         ]

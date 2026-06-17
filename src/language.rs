@@ -1,6 +1,6 @@
+use std::path::Path;
 pub(crate) use std::process::Command;
-use std::{collections::hash_map::HashMap};
-
+use crate::{language, language_list};
 /*(
 Execution Code:
 
@@ -10,6 +10,7 @@ Execution Code:
 {PARENT PATH}
 
 ) */
+#[derive(PartialEq)]
 pub struct Language<'a>
 {
     pub title: &'a str,
@@ -19,22 +20,14 @@ pub struct Language<'a>
     // timeout_period: u32 //in seconds/
 }
 
+#[allow(unused)]
 impl<'a> Language<'a>
 {
-    pub fn new(title: &'a str, header_command: &'a str, execution_code: &'a str) -> Language<'a>
-    {
-        Language {
-            title,
-            header_command,
-            execution_code,
-        }
-    }
-
     pub fn exists_within_device(&self) -> bool 
     {
         return Command::new(&self.header_command).output().is_ok();
     }
-
+    
     pub fn execute(&self, file_path: &str) -> Result<String, String>
     {
         if(!self.exists_within_device())
@@ -90,6 +83,28 @@ impl<'a> Language<'a>
         }
 
         return Ok(output.to_string());
+    }
+
+    pub fn file2language(path: &Path) -> Language<'static>
+    {
+        let extension = path.extension().unwrap().to_str().unwrap();
+
+        match extension
+        {
+            "java" => language_list::JAVA,
+            "py" => language_list::PYTHON,
+            _ => language_list::DEFAULT_LANGUAGE
+        }
+    }
+
+    pub fn language2file(language: &Language) -> String
+    {
+        match language
+        {
+            &language_list::JAVA => "java".to_string(),
+            &language_list::PYTHON => "py".to_string(),
+            _ => "py".to_string()
+        }
     }
 }
 
