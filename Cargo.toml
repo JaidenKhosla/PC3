@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 bollard = "0.21.0"
+futures = "0.3.32"
 json = "0.12.4"
 mongodb = "3.7.0"
 rand = "0.10.1"
+tokio = "1.52.3"

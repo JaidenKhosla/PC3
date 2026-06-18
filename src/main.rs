@@ -15,12 +15,13 @@ mod database;
 use crate::{profile::Profile, teams::Team};
 use std::path::Path;
 use crate::database::database::Database;
-fn main() {
+use crate::util::dependencies::verify_dependencies;
+
+#[tokio::main]
+async fn main() {
     // let x: u8 = Team::generate("team_name".to_string(),8u8);
 
     // println!("{}", x);
-    let path = Path::new("./CompetitionProfile");
-
-    Profile::from(path).unwrap();
+    println!("{:?}",verify_dependencies(true).await);
     // Team::from(Path::new(""))
 }
