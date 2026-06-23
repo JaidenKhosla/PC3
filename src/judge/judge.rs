@@ -4,6 +4,7 @@ use crate::{judge::language::Language, problem_evaluation::problem::{JudgeProble
 use uuid::Uuid;
 
 // use crate::profile::Profile;
+const SHELL_CODE: &str = include_str!("judge_shell.rs");
 
 use std::{collections::LinkedList, fmt::Error, fs::{self, File}, io::{Write}, path::PathBuf};
 pub struct ServerJudge<'a> //what the server stores
@@ -27,33 +28,41 @@ pub struct ClientJudge //what each judge stores
 
 impl ClientJudge
 {
-    pub fn new(port: Option<u32>) -> Self
+    pub fn new(port: Option<u32>, profile_path: &str) -> Self
     {
-        let id = Uuid::new_v4().to_string();
-        
         let PORT = port.unwrap_or(DEFAULT_PORT);
 
-        let judge_directory = dirs::data_dir().unwrap().join(format!("PC3/profiles/judge/{}/", id));
+        let id = Uuid::new_v4().to_string();
 
-        let _ = fs::create_dir_all(&judge_directory);
+        let judge_directory = PathBuf::from(profile_path);
 
-        // let _ = fs::create_dir(judge_directory.join("buffer"));
-        let _ = fs::create_dir(judge_directory.join("inputs"));
-        let _ = fs::create_dir(judge_directory.join("outputs"));
-        let _ = fs::create_dir(judge_directory.join("solution"));
+        ClientJudge { id, port: PORT, judge_directory: judge_directory }         
+    }
 
+    pub fn generate_configuration(&self) -> &Self
+    {
+        todo!("Generate configuration file");
+    }
+
+    pub async fn generate_shell(&self) -> Result<(), Box<dyn std::error::Error>>
+    {
+        let mut file = File::create("judge_shell.rs").unwrap();
+
+        file.write_all(&SHELL_CODE.bytes().collect::<Vec<u8>>()).unwrap();
+
+        let mut command = Command::new("rustc");
+
+        command.arg("judge_shell.rs");
+
+        command.spawn().unwrap().wait().await.unwrap();
 
         
 
 
-        ClientJudge { id, port: PORT, judge_directory }        
+        Ok(())
     }
 
-    pub fn generateConfiguration(&self) -> &Self
-    {
-        todo!("Generate configuration file");
-        self
-    }
+
 
     pub async fn spawn(&self) -> Result<(), Box<dyn std::error::Error>>
     {
@@ -96,7 +105,7 @@ impl ClientJudge
         // let buffered_reader = BufReader::new;
         if compilation_needed
         {
-            let message = format!("{}\n{}\n{}\n{}\n{}", &programming_language_extension, true, submission_file_path.to_str().unwrap(), "NOT READ", "NOT READ");
+            let message = programming_language.get_compilation_line(submission_file_path.to_str().unwrap());
             
             println!("Compiling {}", &problem.title  );
 
@@ -110,19 +119,13 @@ impl ClientJudge
         {
             let Testcase { input_path, output_path, time_limit, memory_limit } = &testcase;
         
-            let message = format!("{}\n{}\n{}\n{}\n{}",
-            &programming_language_extension,
-            false,
-            submission_file_path.to_str().unwrap(),
-            input_path.to_str().unwrap(),
-            output_path.to_str().unwrap()
-        );
+            let message = programming_language.get_execution_line(submission_file_path.to_str().unwrap());
 
-        println!("Running {}", &input_path.to_str().unwrap());
-        
-        let output = ClientJudge::send_message(&mut tcp_stream, &message, *time_limit).await.unwrap();
-        
-        println!("Output: {}", &output);
+            println!("Running {}", &input_path.to_str().unwrap());
+            
+            let output = ClientJudge::send_message(&mut tcp_stream, &message, *time_limit).await.unwrap();
+            
+            println!("Output: {}", &output);
 
         }
     }
