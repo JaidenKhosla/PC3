@@ -1,18 +1,14 @@
 use core::fmt;
-use std::io::{BufWriter, Error, Write};
+use std::io::Error;
 use std::option::Option;
 use std::path::{Path, PathBuf};
 use std::fmt::{Debug, Formatter};
 use std::str::FromStr;
-use std::sync::Arc;
-use json::JsonValue;
-use std::fs::{self, DirEntry, File};
+use json::{JsonValue, number::Number};
+use std::fs::{self, DirEntry};
 use std::collections::HashSet;
 
-use std::thread;
-use std::time;
-
-use crate::language::Language;
+use crate::judge::language::Language;
 use crate::status::Status;
 use crate::util::json_util::read_json;
 
@@ -20,39 +16,15 @@ use crate::util::json_util::read_json;
 #[allow(unused)]
 pub struct Testcase
 {
-    input_path: PathBuf,
-    output_path: PathBuf,
-    time_limit: u64,
-    memory_limit: u64
+    pub input_path: PathBuf,
+    pub output_path: PathBuf,
+    pub time_limit: u32,
+    pub memory_limit: u64
 }
 
 #[allow(unused)]
 impl Testcase
 {
-    pub fn evaluate(&self, submission_path: &PathBuf, language: &Language) -> Status
-    { 
-        let safeLanguage = Arc::new(language);
-        let safeSubmissionPath = Arc::new(submission_path);
-
-        let starting_time = time::Instant::now();
-
-        let evaluationThread = thread::spawn(|| -> Status {
-            return Status::ACCEPTED;
-        });
-
-        while( !evaluationThread.is_finished() && starting_time.elapsed().as_secs() < self.time_limit)
-        {}
-
-        // if(!evaluationThread.is_finished())
-        // {
-        //      Status::TIME_LIMIT_EXCEEDED
-        // }
-
-        todo!("Nor finished");
-
-        
-    }
-
     pub fn from(root: &Path, name: &str) -> Result<Self, Error>
     {
         // let testcases_folder = root.join(path)
@@ -68,7 +40,7 @@ impl Testcase
                     input_path: input_file,
                     output_path: output_file,
                     memory_limit: parsed_config["memory_limit"].as_u64().unwrap(),
-                    time_limit: parsed_config["time_limit"].as_u64().unwrap()
+                    time_limit: parsed_config["time_limit"].as_u32().unwrap()
             };
 
             Ok(testcase)
@@ -81,9 +53,9 @@ impl Testcase
 #[allow(unused)]
 pub struct JudgeProblem<'a>
 {
-    title: String,
-    testcases: Vec<Testcase>,
-    file_path: PathBuf,
+    pub title: String,
+    pub testcases: Vec<Testcase>,
+    pub file_path: PathBuf,
     solution_path: Option<PathBuf>,
     solution_language: Option<Language<'a>>
 }
@@ -91,23 +63,6 @@ pub struct JudgeProblem<'a>
 #[allow(unused)]
 impl JudgeProblem<'_>
 {
-    pub fn evaluate(&self, input_file: PathBuf, language: &Language, solution: Vec<u8>) -> Vec<Status>
-    {
-        let mut result: Vec<Status> = Vec::new();
-
-        let extension = Language::language2file(&language);
-
-        let submission_path = self.file_path.join(format!("{}.{}", self.title, extension));
-
-        BufWriter::new(File::open(&submission_path).unwrap()).write(&solution);
-        
-        for testcase in self.testcases.iter()
-        {
-            result.push(testcase.evaluate(&submission_path, &language));
-        }
-        
-        return result;
-    }
 
     pub fn from(root: PathBuf) -> Result<Self, Error>
     {
@@ -136,7 +91,7 @@ impl JudgeProblem<'_>
 
             let solution_file_path = solution_file.path();
 
-            let language = Language::file2language(&solution_file_path);
+            let language = Language::file2language(&solution_file_path).unwrap();
 
             // let root_ref = root.clone();
 
@@ -158,10 +113,10 @@ impl JudgeProblem<'_>
 #[allow(unused)]
 pub struct ClientProblem
 {
-    name: String,
-    attempts: u8,
-    statuses: Vec<Status>,
-    times: Vec<u64>
+    pub name: String,
+    pub attempts: u8,
+    pub statuses: Vec<Status>,
+    pub times: Vec<u64>
 }
 
 #[allow(unused)]
@@ -181,6 +136,18 @@ impl ClientProblem
                 }
             )
         }()
+    }
+
+    pub fn to_json_value(&self) -> JsonValue
+    {
+        let mut problem_object = JsonValue::new_object();
+        problem_object["name"] = JsonValue::String(self.name.clone());
+        problem_object["attempts"] = JsonValue::Number(self.attempts.into());
+        problem_object["statuses"] = JsonValue::Array(self.statuses.iter().map(|x| JsonValue::String(x.to_string())).collect());
+        problem_object["times"] = JsonValue::Array(self.times.iter().map(|x| JsonValue::Number(Number::from(*x))).collect());
+
+
+        problem_object
     }
 }
 

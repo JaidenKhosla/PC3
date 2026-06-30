@@ -1,53 +1,63 @@
-use bollard::{Docker, plugin::ErrorDetail, query_parameters::{CreateImageOptions, CreateImageOptionsBuilder, ListImagesOptionsBuilder}};
-use std::option::Option::None;
-use futures::stream::TryStreamExt;
+use tokio::process::Command;
 
+use crate::configuration::get_configuration_directory;
 
-const JUDGE_IMAGES: [&str; 3] =
-[
-    "python:3.11.15-slim-trixie", //Python3
-    "openjdk:28-ea-slim", //Java 28
-    "frolvlad/alpine-gxx:latest" // GCC 12.5.0 (C++)
-];
-
-const SERVER_IMAGES: [&str; 1] = 
-[
-    "mongo:nanoserver" //MongoDB
-];
-
-
-pub async fn verify_dependencies(is_server: bool) -> Result<bool, bollard::errors::Error>
+struct Image<'a>
 {
-    let docker_engine = Docker::connect_with_defaults().unwrap();
+    title: &'a str,
+    local: bool
+}
 
-    // let images: Vec<CreateImageOptions> = image_titles.iter().map(|image_title| ).collect::<Vec<CreateImageOptions>>();
-        
-    let mut image_titles = JUDGE_IMAGES.iter().collect::<Vec<&&str>>();
-    
+const JUDGE_DOCKERFILE: Image = Image{
+   title: "judge",
+   local: true
+};
+
+const SERVER_IMAGES: [Image; 1] = 
+[
+    Image{title: "mongo:latest", local: false}
+];
+
+const IMAGE_PATH: &str = "assets/images"; //Relative to configuration directory.
+
+pub async fn verify_dependencies(is_server: bool, is_judge: bool) -> Result<bool, tokio::process::ChildStderr>
+{
+    let mut images: Vec<&Image> = vec![];
+
     if is_server
     {
-        SERVER_IMAGES.iter().for_each(|title| image_titles.push(title));
+        SERVER_IMAGES.iter().for_each(|i| images.push(i));
     }
 
-    
-    for image_title in image_titles.iter()
+    if is_judge
     {
-        let mut image_stream = docker_engine.create_image(Some(CreateImageOptionsBuilder::default().from_image(*image_title).build()), None, None);
-        
-        while let Some(item) = image_stream.try_next().await?
-        {
-            println!("{:?}", item);
-        }; 
-        
-        // Ok(())
-    };
-    
-    println!("{:?}", &image_titles);    
-    let images = docker_engine.list_images(Some(ListImagesOptionsBuilder::default().all(true).build())).await.unwrap();
-    println!("{}", images.len());
-    for image in images
+        images.push(&JUDGE_DOCKERFILE);
+    }
+
+    for image in images.iter()
     {
-        println!("-> {:?}", image);
+        if image.local
+        {   
+            let title = format!("{}:latest", image.title);
+            let path = format!("{}/{}.dockerfile", get_configuration_directory().join(IMAGE_PATH.to_string()).to_str().unwrap(), image.title);
+
+            let mut command = Command::new("docker").args(["build", "-t", &title, "-f", &path, "."]).spawn().expect("build isn't working");
+
+            command.wait().await.unwrap();
+        }
+        else {
+            let mut command = Command::new("docker");
+            command.args(["pull", "--platform", "linux/amd64", &image.title]);
+
+            println!("{:?}", &command);
+
+
+          
+
+            command.spawn().expect("pull didn't work D:").wait().await.unwrap();
+
+        }
+
     }
 
     Ok(true)

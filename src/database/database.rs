@@ -1,7 +1,5 @@
 use std::process::Command;
 
-use mongodb;
-
 
 pub struct Database
 {

@@ -1,0 +1,2 @@
+* Readjust all configuration to be in a configuration directory (like appdata) to avoid file paths messing up.
+* Docker install cli on here

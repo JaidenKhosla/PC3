@@ -1,6 +1,6 @@
 use crate::judge::language::Language;
 
-#[expect(unused)]
+#[allow(unused)]
 pub const PYTHON: Language<'static> = Language {
     title: "Python",
     header_command: "python",
@@ -9,7 +9,7 @@ pub const PYTHON: Language<'static> = Language {
     compilation_time: 0
 };
 
-#[expect(unused)]
+#[allow(unused)]
 pub const JAVA: Language<'static> = Language {
     title: "Java",
     header_command: "java",
@@ -18,4 +18,5 @@ pub const JAVA: Language<'static> = Language {
     compilation_time: 25
 };
 
+#[allow(unused)]
 pub const DEFAULT_LANGUAGE: Language<'static> = PYTHON;

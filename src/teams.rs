@@ -3,21 +3,23 @@ use std::path::Path;
 use std::io::Error;
 use std::collections::HashMap;
 
+use json::JsonValue;
+use json::number::Number;
 use rand;
 use rand::RngExt;
 
-use crate::problem::ClientProblem;
+use crate::problem_evaluation::problem::ClientProblem;
 use crate::util::json_util;
 
 
 
 pub struct Team
 {
-    name: String, 
-    password: String,
-    score: i64,
-    user_count: u8,
-    problem_history: HashMap<String, ClientProblem>
+    pub name: String, 
+    pub password: String,
+    pub score: i64,
+    pub user_count: u8,
+    pub problem_history: HashMap<String, ClientProblem>
 }
 
 impl fmt::Debug for Team
@@ -76,5 +78,27 @@ impl Team
         };
         
         result()
+    }
+
+    pub fn to_json_value(&self) -> JsonValue
+    {
+        let mut json_value = JsonValue::new_object();
+
+        json_value["name"] = JsonValue::String(self.name.to_string());
+        json_value["password"] = JsonValue::String(self.password.to_string());
+        json_value["score"] = JsonValue::Number(self.score.into());
+        json_value["user_count"] = JsonValue::Number(Number::from(self.user_count));
+        json_value["problem_history"] = JsonValue::new_array();
+
+        for key in self.problem_history.keys()
+        {
+
+            let client_problem = self.problem_history.get(key).unwrap();
+            let mut problem_object = client_problem.to_json_value();
+        
+            json_value["problem_history"].push(problem_object);
+        };
+
+        json_value
     }
 }

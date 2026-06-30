@@ -6,16 +6,15 @@ use std::process::Command;
 
 // mod judge;
 
-
-#[allow(unused)]
-const SOCKET_ADDRESS: &str = "localhost:80";
-
 #[allow(unused)]
 pub fn main()
 {
-    let listener = net::TcpListener::bind(SOCKET_ADDRESS).unwrap();
 
-    println!("Listening on {}", &SOCKET_ADDRESS);
+    let socket_address = std::env::var("socket_address").unwrap();
+
+    let listener = net::TcpListener::bind(&socket_address).unwrap();
+
+    println!("Listening on {}", &socket_address);
 
 
     for unparsed_socket in listener.incoming()
