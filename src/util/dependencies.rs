@@ -2,7 +2,7 @@ use tokio::process::Command;
 
 use crate::configuration::get_configuration_directory;
 
-struct Image<'a>
+pub struct Image<'a>
 {
     title: &'a str,
     local: bool
@@ -13,9 +13,9 @@ const JUDGE_DOCKERFILE: Image = Image{
    local: true
 };
 
-const SERVER_IMAGES: [Image; 1] = 
+pub const SERVER_IMAGES: [Image; 1] = 
 [
-    Image{title: "mongo:latest", local: false}
+    Image{title: "postgres:19beta1-alpine3.24", local: false}
 ];
 
 const IMAGE_PATH: &str = "assets/images"; //Relative to configuration directory.

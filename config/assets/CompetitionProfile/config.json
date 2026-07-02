@@ -2,5 +2,36 @@
     "name": "profile_title",
     "author": "Jaiden Khosla",
     "time_start": 0,
-    "time_left": 0
+    "time_left": 0,
+    "teams": [
+        {
+            "name": "TEAM 0",
+            "password": "password",
+            "score": 0,
+            "user_count": 0,
+            "problem_history": [
+                {
+                    "name": "Problem 0",
+                    "attempts": 2,
+                    "statuses": ["TIME_LIMIT_EXCEEDED", "OK"],
+                    "times": [2, 150]
+                }
+            ]
+        },
+        
+        {
+            "name": "TEAM 1",
+            "password": "password",
+            "score": 20,
+            "user_count": 0,
+            "problem_history": [
+                {
+                    "name": "Problem 0",
+                    "attempts": 2,
+                    "statuses": ["MEMORY_OVERFLOW", "OK"],
+                    "times": [2, 150]
+                }
+            ]
+        }
+    ]
 }

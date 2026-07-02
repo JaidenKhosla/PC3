@@ -35,7 +35,7 @@ impl FromStr for Status
 {
     type Err = String;
 
-    fn from_str(s: &str) -> Result<Status, Self::Err>
+    fn from_str(s: &str) -> Result<Status, std::string::String>
     {
         match s
         {

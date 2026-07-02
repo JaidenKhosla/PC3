@@ -1,27 +1,66 @@
-use std::{collections::LinkedList, fs::{self, File}, io::Write, ops::Add, path::PathBuf, time::Duration};
+use std::{collections::LinkedList, fs::{self, File}, io::Write, ops::Add, path::{PathBuf, Path}, time::Duration};
 use futures::{FutureExt, StreamExt};
+use json::JsonValue;
 use tokio::{io::{AsyncBufReadExt, AsyncWriteExt, BufReader}, net::{TcpStream}, process::Command};
-use crate::{judge::language::Language, problem_evaluation::problem::{JudgeProblem, Testcase}, status::Status, util::dependencies::verify_dependencies};
+use crate::{judge::language::Language, problem_evaluation::problem::{JudgeProblem, Testcase}, status::Status, util::{dependencies::verify_dependencies, file_util::get_all_files, interfaces::Serializable, json_util::read_json}};
 use uuid::Uuid;
 
-#[allow(unused)]
-// use crate::profile::Profile;
-const SHELL_CODE: &str = include_str!("judge_shell.rs");
-
-#[allow(unused)]
-pub struct ServerJudge<'a> //what the server stores
-{
-    username: String,
-    password: String,
-    
-    queue: LinkedList<JudgeProblem<'a>>
-}
+use crate::Res;
 
 #[allow(unused)]
 const DEFAULT_PORT: u32 = 51909;
 
 #[allow(unused)]
 const INTERNAL_PORT: u32 = 80;
+
+#[allow(unused)]
+const SHELL_CODE: &str = include_str!("judge_shell.rs");
+
+#[allow(unused)]
+pub struct ServerJudge<'a> //what the server stores
+{
+    pub username: String,
+    password: String,
+    
+    pub queue: LinkedList<JudgeProblem<'a>>
+}
+
+impl<'a> Serializable<ServerJudge<'a>, bool> for ServerJudge<'a>
+{
+    fn from_path(path: &Path) -> Res![ServerJudge<'a>]
+    {
+        let root_path = path.parent().unwrap();
+        let problem_dir_path = root_path.join("problems");
+
+        let problem_dir = get_all_files(&problem_dir_path);
+
+        let json_object = read_json(path).unwrap();
+
+        let username = json_object["username"].to_string();
+        let password = json_object["password"].to_string();
+        let queue = LinkedList::from_iter(problem_dir.iter().map(|problem_path| JudgeProblem::from(problem_path).unwrap()));
+
+        Ok(
+            ServerJudge { username, password, queue }
+        )
+    }
+
+    fn to_json_value(&self) -> JsonValue
+    {
+        let mut json_object = JsonValue::new_object();
+
+        json_object["username"] = JsonValue::String(self.username.to_string());
+        json_object["password"] = JsonValue::String(self.password.to_string());
+
+        json_object
+    }
+
+    fn from_json_value(_: JsonValue) -> Res![bool]
+    {
+        todo!("from_json_value is not implemented by ServerJudge!")
+    }
+}
+ 
 
 pub struct ClientJudge //what each judge stores
 {

@@ -12,6 +12,10 @@ use crate::judge::language::Language;
 use crate::status::Status;
 use crate::util::json_util::read_json;
 
+use crate::util::interfaces::Serializable;
+use crate::Res;
+
+
 
 #[allow(unused)]
 pub struct Testcase
@@ -64,10 +68,10 @@ pub struct JudgeProblem<'a>
 impl JudgeProblem<'_>
 {
 
-    pub fn from(root: PathBuf) -> Result<Self, Error>
+    pub fn from(root: &Path) -> Result<Self, Error>
     {
         // let root = root.clone();
-        let file_path = root.clone();
+        let file_path = root;
 
         || -> Result<JudgeProblem, Error> {
             let title: String = root.file_name().unwrap().to_string_lossy().to_string();
@@ -120,25 +124,24 @@ pub struct ClientProblem
 }
 
 #[allow(unused)]
-impl ClientProblem
+impl Serializable<ClientProblem, ClientProblem> for ClientProblem
 {
-    pub fn from(item: JsonValue) -> Result<Self, Error>
+
+
+    fn from_json_value(item: JsonValue) -> Res![ClientProblem]
     {
-        || -> Result<ClientProblem, Error> {
-        
-            Ok(
-                ClientProblem
-                {
-                    name: item["name"].to_string(),
-                    attempts: item["attempts"].as_u8().unwrap(),
-                    statuses: item["statuses"].members().map(|x| Status::from_str(&x.to_string()).unwrap()).collect(),
-                    times: item["times"].members().map(|x| x.as_u64().unwrap()).collect()
-                }
-            )
-        }()
+        Ok(
+            ClientProblem
+            {
+                name: item["name"].to_string(),
+                attempts: item["attempts"].as_u8().unwrap(),
+                statuses: item["statuses"].members().map(|x| Status::from_str(&x.to_string()).unwrap()).collect(),
+                times: item["times"].members().map(|x| x.as_u64().unwrap()).collect()
+            }
+        )
     }
 
-    pub fn to_json_value(&self) -> JsonValue
+    fn to_json_value(&self) -> JsonValue
     {
         let mut problem_object = JsonValue::new_object();
         problem_object["name"] = JsonValue::String(self.name.clone());
@@ -148,6 +151,11 @@ impl ClientProblem
 
 
         problem_object
+    }
+
+    fn from_path(_: &Path) -> Res![ClientProblem]
+    {
+        todo!("from_path not implented by ClientProblem");
     }
 }
 

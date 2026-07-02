@@ -9,6 +9,7 @@ mod util;
 mod database;
 mod configuration;
 mod problem_evaluation;
+mod server;
 // use programming_language_service::{language};
 use crate::{profile::Profile, teams::Team};
 use std::path::Path;
