@@ -7,6 +7,10 @@ macro_rules! Res {
     [$type:ty] => {
         Result<$type, String>
     };
+
+    [_$type:ty] => {
+        Result<$type, Box<dyn std::error::Error>>
+    };
 }
 pub trait Serializable<T, J>
 {   

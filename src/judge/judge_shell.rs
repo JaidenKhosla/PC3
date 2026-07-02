@@ -36,7 +36,7 @@ pub fn handle_connection(unparsed_socket: Result<TcpStream, std::io::Error>) -> 
 
     let mut buff: Vec<u8> = vec![];
 
-    let bytes = reader.read_until(b'\0', &mut buff).expect("Reading socket failed!");
+    let _: usize = reader.read_until(b'\0', &mut buff).expect("Reading socket failed!");
 
     let message = String::from_utf8_lossy(&buff);
 

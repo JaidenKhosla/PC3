@@ -1,2 +1,6 @@
-* Readjust all configuration to be in a configuration directory (like appdata) to avoid file paths messing up.
+* Design Logic Handler System
 * Docker install cli on here
+* Create scoreboard system
+    * Create logic handler system
+*Make the dispatch server for the Server -> Judges
+* Make the GUI
